@@ -1,33 +1,42 @@
 #include <msp430.h>
-#include "StateMachines.h"
+#include "StateMachine.h"
+#include "switch.h"
 #include "light.h"
 
+
+int state = 2;
+int rate = 0;
+int blink_count = 0;
+
+
+
+
 void The_State_Machine(){
-    switch(State){
+    switch(state){
         case 1:
-            blink_rate = 0;
+            rate = 0;
             state = 2;
             break;
         case 2:
-            blink_rate = 16;
+            rate = 50;
             state = 3;
             break;
         case 3:
-            blink_rate = 32;
+            rate = 500;
             state = 4;
             break;
         case 4:
-            blink_rate = 64;
+            rate = 5000;
             state = 1;
             break;
         default:
-            blink_rate = 0;
+            rate = 0;
             state = 2;
             break;
     }
 }
 
-void state_change(new_state){
+void state_change(int new_state){
     state = new_state;
     The_State_Machine();
 }

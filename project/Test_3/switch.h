@@ -3,5 +3,5 @@
 
 void Port2_buttons();
 
-void Port2_interupt();
+//void Port2_interupt();
 #endif // included

@@ -9,22 +9,14 @@ CC              = msp430-elf-gcc
 AS              = msp430-elf-as
 
 
-all: light.elf
+all: main.elf
 
 #additional rules for files
-light.elf: ${COMMON_OBJECTS} main.o StateMachine.o light.o switch.o ../lib/Library.a
+main.elf: ${COMMON_OBJECTS} main.o
 	${CC} ${CFLAGS} ${LDFLAGS} -o $@ $^
 
-load: light.elf
-	msp430loader.sh light.elf
-
-main.o: light.h StateMachine.h switch.h
-
-light.o: light.c light.h
-
-switch.o: StateMachine.h
-
-StateMachine.o: light.h stateMachine.h
+load: main.elf
+	msp430loader.sh main.elf
 
 clean:
 	rm -f *.o *.elf

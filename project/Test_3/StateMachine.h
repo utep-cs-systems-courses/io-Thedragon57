@@ -4,12 +4,11 @@
 
 
 extern int state;
-extern int rate;
-extern int blink_count;
+extern int toggle_led;
 
 
 void The_State_Machine();
 void state_change();
-
+void DimQuater();
 
 #endif // included

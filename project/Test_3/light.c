@@ -10,3 +10,11 @@ void enable_lights(){
 void light_toggle(){
     P1OUT ^= (BIT0 | BIT6);
 }
+
+void lights_on(){
+    P1OUT |= (BIT0 | BIT6);
+}
+
+void lights_off(){
+    P1OUT &= ~(BIT0 | BIT6);
+}

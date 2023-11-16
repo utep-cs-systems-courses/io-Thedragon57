@@ -54,13 +54,13 @@ void timerAUpmode()
 
 void __interrupt_vec(PORT2_VECTOR) Port_2(){ //telling the computer that when an intrupt happens to use this funtion
   if(P2IFG & BIT0){
-    lights_off();
-    //state_change(1);
+    //lights_off();
+    state_change(1);
     P2IFG &= ~(BIT0);
   }
   if(P2IFG & BIT1){
-    //state_change(2);
-    lights_on();
+    state_change(2);
+    //lights_on();
     P2IFG &= ~(BIT1);
   }
 
@@ -100,28 +100,28 @@ int toggle_led = 0;
 
 
 void The_State_Machine(){
-    switch(state){
-        case 1:
-            DimQuater();
-            state = 2;
-            break;
-        case 2:
-            lights_off();
-            state = 3;
-            break;
-        case 3:
+  switch(state){
+    case 1:
+      DimQuater();
+      state = 2;
+      break;
+    case 2:
+      lights_off();
+      state = 3;
+      break;
+    case 3:
+      lights_on();
+      state = 4;
+      break;
+    case 4:
 
-            state = 4;
-            break;
-        case 4:
+      state = 1;
+      break;
+    default:
 
-            state = 1;
-            break;
-        default:
-
-            state = 2;
-            break;
-    }
+      state = 2;
+      break;
+  }
 }
 
 void state_change(int new_state){
@@ -130,20 +130,23 @@ void state_change(int new_state){
 }
 
 void DimQuater(){
-    switch (toggle_led){
-        case 0:
-            lights_off();
-            toggle_led++;
-        case 1:
-            toggle_led++;
-        case 2:
-            toggle_led++;
-            break;
-        case 3:
-            lights_on();
-            toggle_led = 0;
-            break;
-        default:
-            break;
-    }
+  switch (toggle_led){
+    case 0:
+      light_toggle();
+      toggle_led++;
+      break;
+    case 1:
+      light_toggle();
+      toggle_led++;
+      break;
+    case 2:
+      toggle_led++;
+      break;
+    case 3:
+      light_toggle();
+      toggle_led = 0;
+      break;
+    default:
+      break;
+  }
 }

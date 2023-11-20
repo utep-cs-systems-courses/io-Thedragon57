@@ -1,5 +1,5 @@
-#ifndef Library_included
-#define Library_included
+#ifndef main_included
+#define main_included
 
 void enable_lights();
 void light_toggle();

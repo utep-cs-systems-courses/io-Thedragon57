@@ -1,7 +1,9 @@
 #include <msp430.h>
 //#include "Library.h"
 
-
+static short rate = 0x100;
+static char blinking = 0;
+static short frz = 0;
 int main(void) {
   configureClocks();		/* setup master oscillator, CPU & peripheral clocks */
   enableWDTInterrupts();	/* enable periodic interrupt */
@@ -11,10 +13,15 @@ int main(void) {
   P2IE |= (BIT0 | BIT1 | BIT2 | BIT3);//enable interupt
   P2IES |= (BIT0 | BIT1 | BIT2 | BIT3);//enable interupt edge select
   P2IFG &= ~(BIT0 | BIT1 | BIT2 | BIT3);//sets the interupt flag to 0
+  timerAUpmode();
+  P2DIR = BIT6;		/* enable output to speaker (P2.6) */
+  P2SEL2 &= ~(BIT6 | BIT7);
+  P2SEL &= ~BIT7;
+  P2SEL |= BIT6;
   enable_lights();
     //Port2_interupt();
 
-  __bis_SR_register((LPM4_bits | GIE));
+  __bis_SR_register((LPM0_bits | GIE)); //LPM 4 disables watchdog timer and LMP 0 disables the cpu
 }
 
 
@@ -52,6 +59,15 @@ void timerAUpmode()
   TACTL = TASSEL_2 + MC_1;
 }
 
+
+void buzzer_set_period(short cycles) /* buzzer clock = 2MHz.  (period of 1k results in 2kHz tone) */
+{
+  CCR0 = cycles;
+  CCR1 = cycles >> 1;		/* one half cycle */
+}
+
+
+
 void __interrupt_vec(PORT2_VECTOR) Port_2(){ //telling the computer that when an intrupt happens to use this funtion
   if(P2IFG & BIT0){
     //lights_off();
@@ -73,6 +89,8 @@ void __interrupt_vec(PORT2_VECTOR) Port_2(){ //telling the computer that when an
     state_change(4);
     P2IFG &= ~(BIT3);
   }
+  __delay_cycles(20000);
+
 }
 
 void enable_lights(){
@@ -102,23 +120,38 @@ int toggle_led = 0;
 void The_State_Machine(){
   switch(state){
     case 1:
-      DimQuater();
+      blinking = 1;
+      if (frz < 1900){
+        frz += 100;
+        buzzer_set_period(frz);
+      }
+      if(rate > 0x10)
+      rate = rate >> 1;
       state = 2;
       break;
     case 2:
       lights_off();
+      buzzer_set_period(0);
+      blinking = 0;
       state = 3;
       break;
     case 3:
       lights_on();
+      blinking = 0;
       state = 4;
       break;
     case 4:
-
+      blinking = 1;
+      if (frz > 100){
+        frz -= 100;
+        buzzer_set_period(frz);
+      }
+      if(rate < 0x400);
+      rate = rate << 1;
       state = 1;
       break;
     default:
-
+      buzzer_set_period(0);
       state = 2;
       break;
   }
@@ -129,24 +162,10 @@ void state_change(int new_state){
     The_State_Machine();
 }
 
-void DimQuater(){
-  switch (toggle_led){
-    case 0:
-      light_toggle();
-      toggle_led++;
-      break;
-    case 1:
-      light_toggle();
-      toggle_led++;
-      break;
-    case 2:
-      toggle_led++;
-      break;
-    case 3:
-      light_toggle();
-      toggle_led = 0;
-      break;
-    default:
-      break;
+void __interrupt_vec(WDT_VECTOR) WDT(){
+  static char blink_count = 0;
+  if (++blink_count == (rate/2) && blinking == 1) {
+    light_toggle();
+    blink_count = 0;
   }
 }
